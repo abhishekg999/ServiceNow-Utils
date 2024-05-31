@@ -88,10 +88,6 @@ var snuslashcommands = {
         "url": "*",
         "hint": "All menu search (Next Experience only) <search>"
     },
-    "aw": {
-        "url": "/now/workspace/agent/",
-        "hint": "Agent Workspace"
-    },
     "cheat": {
         "url": "https://www.arnoudkooi.com/cheatsheet/",
         "hint": "Download the latest SN Utils cheatsheet"
@@ -99,6 +95,13 @@ var snuslashcommands = {
     "comm": {
         "url": "https://www.servicenow.com/community/forums/searchpage/tab/message?advanced=false&allow_punctuation=false&q=$0",
         "hint": "Search Community <search>"
+    },
+    "crn": {
+        "url": "javascript: (function () {\n\tif (!g_form) return;\n\tlet blacklistedFields = ['number','sys_scope'];\n\tlet newRecordURL = `/${g_form.getTableName()}.do?sys_id=-1`;\n\t " + 
+               "let queryParts = g_form.elements.reduce((acc, el) => {\n\t\tif (\n\t\t\tel.fieldName.startsWith('sys') ||\n\t\t\tblacklistedFields.includes(el.fieldName) ||\n\t\t\tel.fieldName.indexOf('.') !== -1\n\t\t)\n\t\t\treturn acc; " + 
+               "\n\t\tif (g_form.isFieldVisible(el.fieldName) && g_form.getValue(el.fieldName) !== '') {\n\t\t\tacc.push(`${el.fieldName}=${encodeURIComponent(g_form.getValue(el.fieldName))} `);\n\t\t}\n\t\treturn acc;\n\t}, []);" + 
+               "\n\tlet queryString = 'sysparm_query=' + queryParts.join('^');\n\tlet viewString = `sysparm_view=${encodeURIComponent(g_form.getViewName())}`;\n\twindow.open([newRecordURL, queryString, viewString].join('&'), '_blank');\n})();",
+        "hint": "Copy Record to New tab"
     },
     "cs": {
         "url": "sys_script_client_list.do?sysparm_query=nameLIKE$0^ORDERBYDESCsys_updated_on",
@@ -110,7 +113,7 @@ var snuslashcommands = {
         "hint": "Dashboards"
     },
     "dev": {
-        "url": "https://developer.servicenow.com/dev.do#!/search/vancouver/All/$0",
+        "url": "https://developer.servicenow.com/dev.do#!/search/washingtondc/All/$0",
         "hint": "Search developer portal <search>"
     },
     "diff1": {
@@ -126,7 +129,7 @@ var snuslashcommands = {
         "hint": "Compare current record XML with XML of <instance>"
     },
     "docs": {
-        "url": "https://docs.servicenow.com/search?q=$0&labelkey=vancouver",
+        "url": "https://docs.servicenow.com/search?q=$0&labelkey=washingtondc",
         "hint": "Search Docs <search>"
     },
     "elev": {
@@ -230,6 +233,10 @@ var snuslashcommands = {
         "fields": "name",
         "overwriteurl": "#snu:switchto,domain,value,$sysid",
     },
+    "sow": {
+        "url": "/now/sow/home",
+        "hint": "Service Operations Workspace"
+    },
     "su": {
         "url": "sys_update_set_list.do?sysparm_query=state=in progress^application=javascript:gs.getCurrentApplicationId()^nameLIKE$0^ORDERBYDESCsys_updated_on",
         "hint": "Switch Update set <name>",
@@ -304,6 +311,13 @@ var snuslashcommands = {
         "hint": "UIB Experience <search>",
         "fields": "title,path,admin_panel.sys_id",
         "overwriteurl": "/now/build/ui/apps/$admin_panel.sys_id"
+    },
+    "uibo": {
+        "url": "javascript: !function(){let e=(e,a,n)=>{if(parseInt(ux_globals?.libuxf?.version.split(\".\")[0])>22){var t=`/now/builder/ui/redirect/experience/params/base-id/${e}/page-sys-id/${a}/`;n&&(t+=`screen-id/${n}/`)}else{var t=`/now/build/ui/apps/${e}/pages/${a}/`;" +
+               "n&&(t+=`variants/${n}/`)}window.open(t,\"_blank\"),event&&event.stopPropagation()};(()=>{let a=ux_globals?.pageSettings?.sys_id?.value;if(!a){snuSlashCommandInfoText(\"Unable to locate app config, are you on a UX Page?\");return} " + 
+               " let n=ux_globals?.snCanvasScreen?.screenData;if(!n||!n.screenType){snuSlashCommandInfoText(\"Unable to locate screen collection, are you on a UX Page?\");return}let t=window.location.pathname,r=ux_globals?.siteName,s=RegExp(\"^/\"+r),i=r&&s.test(t); " + 
+               " if(!i){snuSlashCommandInfoText(\"UX Globals are stale, please refresh the page.\");return}let o=ux_globals?.snCanvasScreen?.screenData?.viewportConfigurationId;e(a,n?.screenType,o)})()}();",
+        "hint": "Open page in UIB"
     },
     "uis": {
         "url": "sys_ui_script_list.do?sysparm_query=nameLIKE$0^ORDERBYDESCsys_updated_on",
@@ -613,7 +627,7 @@ function snuSlashCommandAddListener() {
     window.top.document.getElementById('snufilter').classList.add('snu-slashcommand');
 
     window.top.document.getElementById('snufilter').addEventListener('keydown', function (e) {
-        if (e.key == 'Shift') {
+        if (e.key == 'Shift' && window.top.document.querySelectorAll('div.snutils span.dispidx').length) { //only toggle when there are direct links
             snunumbernav = snuSlashCommandNumberNav(true);
             let dlinks = window.top.document.getElementById('snudirectlinks');
             if (dlinks) {
@@ -883,7 +897,7 @@ function snuSlashCommandAddListener() {
                 var data = {};
                 data.instance = window.location.host.split('.')[0];
                 data.url = window.location.origin;
-                data.g_ck = g_ck;
+                data.g_ck = g_ck || window.top.g_ck;
                 data.query = query;
                 var event = new CustomEvent(
                     "snutils-event",
@@ -907,7 +921,7 @@ function snuSlashCommandAddListener() {
                     data.sysId = vars.sysId;
                     data.instance = window.location.host.split('.')[0];
                     data.url = window.location.origin;
-                    data.g_ck = g_ck;
+                    data.g_ck = g_ck || window.top.g_ck;
                     let event = new CustomEvent(
                         "snutils-event",
                         {
@@ -1119,11 +1133,13 @@ function snuSlashCommandAddListener() {
             else if (!snuslashcommands.hasOwnProperty(shortcut)) {
 
                 var inIFrame = (shortcut == snufilter.toLowerCase().slice(0, idx) && sameWindow)
+                var doc = (document.querySelector("#gsft_main") || document.querySelector("[component-id]")?.shadowRoot?.querySelector("#gsft_main"));
+                if (!doc) inIFrame = false;
                 if (e.target.className == "snutils") inIFrame = false;
 
                 if (shortcut.includes('.do')) {
                     if (inIFrame) {
-                        (document.querySelector("#gsft_main") || document.querySelector("[component-id]").shadowRoot.querySelector("#gsft_main")).src = shortcut;
+                        doc.src = shortcut;
                     }
                     else {
                         if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
@@ -1235,7 +1251,7 @@ function snuSlashCommandAddListener() {
                 else {
 
                     if (targeturl.startsWith("javascript:")) {
-                        window.location = DOMPurify.sanitize(targeturl);
+                        window.location = targeturl;
                     }
                     else if (!targeturl.startsWith("//")) {
                         if ((new Date()).getTime() - snuLastOpened > 500) {
@@ -1478,7 +1494,7 @@ function snuResolveVariables(variableString){
     let tableName = '';
     let sysId = '';
     let encodedQuery = '';
-    let doc = gsft ? gsft.contentWindow : window;
+    let doc = gsft ? gsft.contentWindow : window.top;
     if (typeof doc.g_form !== 'undefined') { //get sysid and tablename from classic form
         tableName = doc.g_form.getTableName();
         sysId = doc.g_form.getUniqueValue();
@@ -1532,10 +1548,10 @@ function snuResolveVariables(variableString){
         variableString = variableString.replace(/\$table/g,tableName);
         variableString = variableString.replace(/\$sysid/g,sysId);
     }
-    else { ///get sysid and tablename from portal or workspace
+    else { ///get sysid and tablename from portal or workspace or workflow studio
         let searchParams = new URLSearchParams(window.location.search)
-        tableName = (searchParams.get('table') || searchParams.get('id') || '').replace(/[^a-z0-9-_]/g, '');
-        sysId = (searchParams.get('sys_id') || '').replace(/[^a-f0-9-_]/g, '');
+        tableName = (searchParams.get('table') || searchParams.get('tableName') || searchParams.get('id') || '').replace(/[^a-z0-9-_]/g, '');
+        sysId = (searchParams.get('sys_id') || searchParams.get('sysId') || '').replace(/[^a-f0-9-_]/g, '');
         if (tableName && sysId) { //portal
             variableString = variableString.replace(/\$table/g, tableName);
             variableString = variableString.replace(/\$sysid/g, sysId);
@@ -1553,7 +1569,7 @@ function snuResolveVariables(variableString){
             variableString = variableString.replace(/\$sysid/g, sysId);
         }
     }
-    rtrn = {
+    let rtrn = {
         "variableString" : variableString,
         "tableName" : tableName,
         "sysId" : sysId,
@@ -1597,6 +1613,7 @@ function snuSettingsAdded() {
     snusettings.codeeditor ??= true;
     snusettings.s2ify ??= true;
     snusettings.highlightdefaultupdateset ??= true;
+    snusettings.slashpopuppriority ??= false;
     snusettings.slashnavigatorsearch ??= true;
     snusettings.slashhistory ??= 50;
     snusettings.addtechnicalnames ??= false;
@@ -1644,12 +1661,13 @@ function snuSettingsAdded() {
         snuEnhanceNotFound();
         snuPaFormulaLinks();
         snuRemoveLinkLess();
-        snuTableCollectionLink();
+        snuAddTableCollectionLink();
+        snuAddSysUpdateVersionLink();
         snuNewFromPopupToTab();
         snuCreateHyperLinkForGlideLists();
         mouseEnterToConvertToHyperlink();
         snuAddGroupSortIcon();
-        snuAddListLinks();
+        snuAddListLinks(false);
         snuAddFormDesignScopeChange();
         snuAddPersonaliseListHandler();
         snuAddLinkToCachDo();
@@ -1659,7 +1677,11 @@ function snuSettingsAdded() {
         snuEnterToFilterSlushBucket();
         snuHyperlinkifyWorkNotes();
         snuEasifyAdvancedFilter();
+        snuAddGckToken("stats.do");
+        snuAddPreviewAttachmentLinks();
+
     }
+
 
     if (snusettings.hasOwnProperty("slashcommands")) {
         try {
@@ -1906,8 +1928,21 @@ function snuDoubleClickToShowFieldOrReload() {
                 }
             }
             else if (['div', 'li', 'body'].includes(event.target.localName) && !event.target.parentElement.className.includes('monaco')) {
-                if (!window?.snusettings?.nouielements) //disable the doubleclick when SN Utils UI elements off
+                if (!window?.snusettings?.nouielements  && event.target.className !== 'snuwrap') //disable the doubleclick when SN Utils UI elements off
                     snuAddTechnicalNames();
+            }
+            else if (event.target.tagName == 'OPTION'){ 
+                if (event.target?.parentElement?.selectedIndex == -1){
+                    // Temporary fix for Chrome bug, where selectedIndex is not set when selecting an option via doubleclick
+                    // https://issues.chromium.org/issues/342316798
+                    const slushselect = event.target.parentElement;
+                    slushselect.querySelectorAll('option').forEach((option, index) => {
+                        if (event.target === option) {
+                            event.target.parentElement.selectedIndex = index;
+                            console.log('[SN Utils] setting selectedIndex Chrome bug / PRB1768385');
+                        }
+                    });
+                }
             }
         }, true);
     }
@@ -1973,8 +2008,8 @@ function snuAddGroupSortIcon() {
     }
 }
 
-function snuAddListLinks() {
-    if (["/syslog_list.do","/sys_update_set.do","/sys_update_xml_list.do","/sys_upgrade_history_log_list.do"].includes(location.pathname)) {
+function snuAddListLinks(forceLink) {
+    if (["/syslog_list.do","/sys_update_set.do","/sys_update_xml_list.do","/sys_upgrade_history_log_list.do"].includes(location.pathname) || forceLink) {
         // Supports for 3 different patterns of script ids being present in logs:
         // table_name:sys_id table_name.sys_id table_name_sys_id
         
@@ -2024,7 +2059,7 @@ function snuAddListLinks() {
             tableCell.classList.add('snuified');
         });
 
-        setTimeout(snuAddListLinks, 3000); // "recursive" call this incase we navigate to next page.
+        setTimeout(() => { snuAddListLinks(forceLink) }, 3000); // "recursive" call this incase we navigate to next page.
     }
 }
 
@@ -2061,6 +2096,23 @@ function snuS2Ify() {
     });
 }
 
+
+async function snuAddGckToken(pathName = ""){
+    if (!(location.pathname.includes(pathName) && !g_ck)) return; 
+
+    const response = await fetch(`/sn_devstudio_/v1/get_publish_info.do`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'BasicCustom'
+        }
+    });
+    if (response.ok) {
+        const resp = await response.json();
+        g_ck = resp?.ck; //set the global g_ck
+    }
+}
 
 
 function snuAddFormDesignScopeChange() {
@@ -2277,7 +2329,7 @@ function snuCaptureFormClick() {
                 }
             }
 
-            if (event.target.className.includes('scriptSync icon-save')) {
+            if (event.target.className.length && event.target.className.includes('scriptSync icon-save')) { //for svg className is an object
                 if (g_form.isNewRecord()) {
                     snuSlashCommandInfoText('This is a new record, try again after saving',false);
                     return true;
@@ -2285,7 +2337,7 @@ function snuCaptureFormClick() {
                 snuPostToScriptSync(event.target.dataset.field, event.target.dataset.fieldtype);
                 event.target.style.opacity = 0.3;
             }
-            if (event.target.className.includes('scriptSync icon-code')) {
+            else if (event.target.className.length && event.target.className.includes('scriptSync icon-code')) {
                 if (g_form.isNewRecord()) {
                     snuSlashCommandInfoText('This is a new record, try again after saving',false);
                     return true;
@@ -2924,12 +2976,64 @@ function snuRemoveLinkLess() {
         newUrl + "' title='Link added by SN Utils (This is NOT a UI Action!)' >Show Related links</a></span>"));
 }
 
-function snuTableCollectionLink() {
+function snuAddTableCollectionLink() {
     if (location.pathname != "/sys_db_object.do") return;
     if (typeof jQuery == 'undefined') return;
     var tbl = g_form.getValue('name');
-    jQuery('.related_links_container').append("<li style='font-weight:bold; margin-top:15px;' class='>navigation_link action_context default-focus-outline'><a href='sys_dictionary.do?sysparm_query=name=" +
-        tbl + "^internal_type=collection&sysparm_view=advanced' title='Link added by SN Utils (This is NOT a UI Action!)' >[SN Utils] Collection Dictionary Entry</a></li>");
+    jQuery('.related_links_container').append("<li style='margin-top:5px;' ><a href='sys_dictionary.do?sysparm_query=name=" +
+        tbl + "^internal_type=collection&sysparm_view=advanced' class='navigation_link action_context default-focus-outline' title='Link added by SN Utils (This is NOT a UI Action!)' >[SN Utils] Collection Dictionary Entry</a></li>");
+}
+
+async function snuAddSysUpdateVersionLink() {
+    if (typeof g_form === 'undefined') return;
+    if (g_form.isNewRecord()) return;
+
+    let tbl = g_form.getTableName();
+    let isProbableUpdateSync = g_form.hasField('sys_scope') || tbl.startsWith('sys_') || g_form.getScope() != 'global';
+    if (!isProbableUpdateSync) return;
+    if (g_form.getRelatedListNames().join(',').includes('67bdac52374010008687ddb1967334ee')) return; //already there
+    
+
+    let relatedLinksContainer = document.querySelector('.related_links_container');
+    if (!relatedLinksContainer) return;
+
+    let query = `name=${tbl}_${g_form.getUniqueValue()}`;
+
+    //sys_update_version_list.do?sysparm_query=name=$table_$sysid
+    let result = await snuFetchData(g_ck, 
+        `/api/now/table/sys_update_version?sysparm_query=${query}&sysparm_fields=sys_id&sysparm_limit=1`);
+
+    let versionRecords = result.resultcount || 0;
+    
+    var listItem = document.createElement('li');
+    listItem.style.marginTop = '5px';
+
+    var anchor = document.createElement('a');
+    anchor.href = '#';
+    anchor.className = 'navigation_link action_context default-focus-outline';
+    anchor.title = 'Version link added by SN Utils, Versions related list not found (This is NOT a UI Action)';
+    anchor.textContent = `[SN Utils] Versions (${versionRecords})`;
+    anchor.addEventListener('click', () => openVersionList(query));
+    listItem.appendChild(anchor);
+    relatedLinksContainer.appendChild(listItem);
+
+
+    function openVersionList(query) {
+
+        if (typeof GlideList2 == 'undefined') { //fallback #504
+            console.log('GlideList2 not on form, opening new tab, see GitHub Isse #504 for more info');
+            window.open(`/sys_update_version_list.do?sysparm_fixed_query=${query}`, 'versions');
+            return;
+        }
+
+        var gm = new GlideModal("sys_update_version_list");
+        gm.setTitle('[SN Utils] Update Versions');
+        gm.setPreference('sysparm_fixed_query', query);      	
+        gm.setPreference('sysparm_query', '^ORDERBYDESCsys_updated_on');      	
+        gm.setWidth(900);
+        gm.render();
+    }
+
 }
 
 function snuEnterToFilterSlushBucket() {
@@ -3089,7 +3193,14 @@ function snuSetShortCuts() {
     var snudirectlinks = (snunumbernav) ? '' : 'snudirectlinksdisabled';
     var cleanHTML = DOMPurify.sanitize(divstyle +
         `<div class="snutils" style="display:none;"><div class="snuheader"><a id='cmdhidedot' class='cmdlink'  href="#">
-    <svg style="height:16px; width:16px;"><circle cx="8" cy="8" r="5" fill="#FF605C" /></svg></a> Slashcommands <span id="snuslashcount" style="font-weight:normal;"></span><span style="float:right; font-size:8pt; line-height: 16pt;">&nbsp;</span></div>
+    <svg style="height:16px; width:16px;"><circle cx="8" cy="8" r="5" fill="#FF605C" /></svg></a> Slash commands <span id="snuslashcount" style="font-weight:normal;"></span><span style="float:right; font-size:8pt; line-height: 0pt;">
+    <a style="color:inherit; font-family:Helvetica,Ariel;text-decoration:none; display:flex; align-items:center;" href="https://www.linkedin.com/company/sn-utils" target="_blank"> Follow #snutils on  
+    <?xml version="1.0" ?><svg style="margin:3px;" height="14" viewBox="0 0 72 72" width="14" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" fill-rule="evenodd"><path d="M8,72 L64,72 C68.418278,72 72,68.418278 72,64 L72,8 C72,3.581722 68.418278,-8.11624501e-16 64,0 L8,0 C3.581722,8.11624501e-16 -5.41083001e-16,3.581722 0,8 L0,64 C5.41083001e-16,68.418278 3.581722,72 8,72 Z" fill="#007EBB"/>
+    <path d="M62,62 L51.315625,62 L51.315625,43.8021149 C51.315625,38.8127542 49.4197917,36.0245323 45.4707031,36.0245323 C41.1746094,36.0245323 38.9300781,38.9261103 38.9300781,43.8021149 L38.9300781,62 L28.6333333,62 L28.6333333,27.3333333 L38.9300781,27.3333333 
+    L38.9300781,32.0029283 C38.9300781,32.0029283 42.0260417,26.2742151 49.3825521,26.2742151 C56.7356771,26.2742151 62,30.7644705 62,40.051212 L62,62 Z M16.349349,22.7940133 C12.8420573,22.7940133 10,19.9296567 10,16.3970067 C10,12.8643566 12.8420573,10 16.349349,10 
+    C19.8566406,10 22.6970052,12.8643566 22.6970052,16.3970067 C22.6970052,19.9296567 19.8566406,22.7940133 16.349349,22.7940133 Z M11.0325521,62 L21.769401,62 L21.769401,27.3333333 L11.0325521,27.3333333 L11.0325521,62 Z" fill="#FFF"/></g>
+    </svg></a> &nbsp;</span></div>
     <input id="snufilter" name="snufilter" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-autocomplete="both" aria-haspopup="false" class="snutils" type="text" placeholder='SN Utils Slashcommand' > </input>
     <ul id="snuhelper"></ul>
     <div id="snudirectlinks" class="${snudirectlinks}"></div>
@@ -3105,6 +3216,16 @@ function snuSetShortCuts() {
 
     document.addEventListener("keydown", function (event) {
         if (event.key == '/') {
+            if (snusettings.slashpopuppriority && (event?.target?.id !== 'snufilter' || 
+                (event?.target?.id == 'snufilter' && event?.target?.value.length > 1))) {
+                    if (!window.top?.querySelectorShadowDom?.querySelectorDeep('now-modal.keyboard-shortcuts-modal')){ //allow hidding when visible
+                        if (event.metaKey || event.ctrlKey) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                    }
+            };
+
             if (snusettings.slashoption == 'off') return;
             let eventPath = event.path || (event.composedPath && event.composedPath());
             if (eventPath[0]?.className?.includes('CodeMirror-code')) return; //allow commenting wit ctrl-/
@@ -3116,7 +3237,7 @@ function snuSetShortCuts() {
                     path[0].id == 'filter' && path[0].value == ''
                 ) { //not when form element active, except filter
 
-                    if (path.length > 8 && path[2]?.className.includes('CodeMirror')) return //not in codemirror
+                    if (path.length > 8 && path[2]?.className && path[2].className.includes('CodeMirror')) return //not in codemirror
                     event.preventDefault();
                     //in some browsers the event KEYBOARD_SHORTCUTS_BEHAVIOR#MODAL_OPENED event can't be captured. this is a temporary fallback
                     var showingPopup = window.top?.querySelectorShadowDom?.querySelectorDeep('.keyboard-shortcuts-modal'); //washington shortcuts popup 
@@ -3140,11 +3261,18 @@ function snuSetShortCuts() {
             if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() == "s") { //cmd-s
 
                 event.preventDefault();
+
+                if (document.querySelectorAll('#sysverb_post_update').length) { //not when on update multiple form #495
+                    g_form.addWarningMessage("[SN Utils] Save shortcut disabled for Update multiple records, please use the UI Action");
+                    return false;
+                }
+
                 var doInsertStay = false;
                 if (event.shiftKey) {
                     doInsertStay = document.querySelectorAll('#sysverb_insert_and_stay').length;
                     if (!doInsertStay) {
-                        g_form.addWarningMessage("Insert and Stay not available for this record (SN Utils Extension)");
+                        g_form.addWarningMessage(`[SN Utils] Insert and Stay not available for this record.<br />
+                        Try slash command <a href="javascript:snuSlashCommandShow('/crn',1)" >/crn Copy Record to New tab</a>`);
                         return false;
                     }
                 }
@@ -3541,12 +3669,12 @@ async function snuFetchData(token, url, post, callback) {
       };
       try {
         const response = await fetch(url, {
-          method: post ? 'PUT' : 'GET',
+          method: post ? post?.method : 'GET',
           headers,
-          body: post ? JSON.stringify(post) : null
+          body: post ? JSON.stringify(post?.body) : null
         });
         let data = response.ok ? await response.json() : response;
-        data.resultcount = response.headers.get("X-Total-Count");
+        data.resultcount = Number(response.headers.get("X-Total-Count"));
         if (callback) callback(data);
         resolve(data);
       } catch (error) {
@@ -3968,14 +4096,18 @@ function snuPostToScriptSync(field, fieldType) {
     }
     else { //bgscript
 
+        let scriptVal = (typeof snuEditor !== 'undefined') ? snuEditor.getValue() : document.querySelector('#runscript')?.value; //modern or classic...
+        let scope = document.querySelector('select[name=sys_scope]')?.value || 'global';
+
 
         let date = new Date();
         let my_id = (date.getFullYear().toString() + pad2(date.getMonth() + 1) + pad2(date.getDate()) + '-' + pad2(date.getHours()) + pad2(date.getMinutes()) + pad2(date.getSeconds()));
         function pad2(n) { return n < 10 ? '0' + n : n } //helper for date id
         data.field = 'bg';
         data.table = 'background'
+        data.scope = scope;
         data.sys_id = my_id;
-        data.content = '// sn-scriptsync - Received from background script tab via SN Utils. (delete file after usage.)\n\n' + document.getElementById('runscript').value;
+        data.content = '// sn-scriptsync - Received from background script tab via SN Utils.\n\n' + scriptVal;
         data.fieldType = 'script';
         data.name = 'script'; //(new Date()).toISOString().slice(0,10).replace(/-/g,"");
     }
@@ -3990,7 +4122,7 @@ function snuPostLinkRequestToScriptSync(field) {
     var instance = {};
     instance.name = window.location.host.split('.')[0];
     instance.url = window.location.origin;
-    instance.g_ck = g_ck;
+    instance.g_ck = g_ck || window.top.g_ck;
 
     var ngScope = angular.element(document.getElementById('explorer-editor-wrapper')).scope()
     var data = {};
@@ -4011,7 +4143,7 @@ function snuAddFieldSyncButtons() {
     if (typeof g_form != 'undefined') {
         //if (g_form.isNewRecord()) return;
         var tableName = g_form.getTableName();
-        var isSysTable = tableName.startsWith('sys_');
+        var isSysTable = tableName.startsWith('sys_') ||  tableName.startsWith('par_');
         jQuery(".label-text").each(function (index, value) {
             try {
                 var elm = jQuery(this).closest('div.form-group').attr('id').split('.').slice(2).join('.');
@@ -4079,7 +4211,9 @@ function snuAddBGScriptButton() {
     g_ck = document.getElementsByName('sysparm_ck')[0]?.value;
     window.top.window.g_ck = g_ck;
     if (g_ck) {
-        document.getElementsByTagName('label')[0].insertAdjacentHTML('afterend', " <a href='javascript:snuPostToScriptSync();'>[Mirror in sn-scriptsync]</a>");
+        let lbl = document.querySelector('label');
+        if (lbl)
+            lbl.insertAdjacentHTML('afterend', " <a href='javascript:snuPostToScriptSync();' title='[SN Utils] Open in VS Code via sn-scriptsync'>[Open in VS Code]</a>");
     }
 }
 
@@ -4863,13 +4997,32 @@ function snuAddPersonaliseListHandler() {
 
     })
 
+    //this adds the option CONTAINS to the list filter operator if it is not present on CTRL/CMD click
+     if (typeof g_list != 'undefined') {
+        document.addEventListener('click', function (event) {
+            if (event.ctrlKey || event.metaKey) {
+                if (event.target.tagName == 'SELECT' && event.target.classList.contains('filerTableSelect')){
+                    const options = event.target.options;
+                    let exists = false;
+                    for (let i = 0; i < options.length; i++) { // Check for option existence
+                      if (options[i].value === "LIKE") {
+                        exists = true;
+                        break;
+                      }
+                    }
+                    // Add the option if it does not exist
+                    if (!exists) event.target.add(new Option("[SN Utils] contains", "LIKE"));
+                }
+            }
+        });
+    }
+
 }
 
 
 function snuListFilterHelper() {
 
-    if (typeof GlideList2 == 'undefined') return;
-
+    if (typeof GlideList2 == 'undefined' || typeof g_form !== 'undefined') return true; //prevent global g_list on forms
     let relatedListsButtons = document.querySelectorAll('[data-type="list_mechanic2_open"]:not(.snuified)');
 
     if (!relatedListsButtons) return;
@@ -5284,7 +5437,7 @@ async function snuCheckFamily(){
 	let family = '';
 	try{
         let storedfamily = JSON.parse(localStorage.getItem('snufamily')) || {}; //once a day check version (use /cls to clear cache)
-        if (storedfamily?.checked == new Date().toISOString().substring(0,10)) 
+        if (storedfamily?.checked == new Date().toISOString().substring(0,10) || storedfamily?.override) 
             return storedfamily?.family;
 
 		let fetchd = await snuFetchData(g_ck, '/api/now/table/sys_properties?sysparm_limit=1&sysparm_fields=value&sysparm_query=name=com.glide.embedded_help.version');
@@ -5317,4 +5470,400 @@ function snuInstanceTagToggle(){
         document.documentElement.style.setProperty("--snu-instancetag-tag-display", snuInstanceTagConfig.tagEnabled ? "" : "none");
         snuDispatchBackgroundEvent("updateinstancetagconfig", snuInstanceTagConfig);
     }
+}
+
+let snuCurrentAttatchmentIndex = -1;
+async function snuPreviewAttachmentsModal(attSysId){
+    let data = await snuFetchData(g_ck,`/api/now/attachment?sysparm_query=table_name=${g_form.getTableName()}^table_sys_id=${g_form.getUniqueValue()}&syssysparm_limit=100`);
+    data = data?.result;
+    if (!data.length) return;
+
+    const container = document.createElement('div');
+    container.id = 'snuAttachmentPreview';
+    container.innerHTML = `
+    <style>
+
+    #snuAttachmentPreview {
+        display: flex;
+        width: 100%;
+        height: 80vh;
+    }
+
+    #snuAttatchmentNav {
+        width: 20%;
+        overflow-y: auto;
+    }
+
+    #snuAttatchmentContent {
+        width: 80%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        padding: 5px;
+    }
+
+    #snuAttatchmentNav ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    #snuAttatchmentNav ul li {
+        position: relative;
+        padding-left: 16px; 
+        margin-bottom: 3px;
+        background-image: url('/images/icons/attach_text.gifx'); 
+        background-size: 12px 12px;
+        background-repeat: no-repeat; 
+        background-position: left top;
+        cursor: pointer;
+    }
+
+    #snuAttatchmentNav ul li a {
+        text-decoration: none;
+        color: #000;
+        display: block;
+    }
+
+    #snuAttachmentPreview:has(.modal-dialog) {
+        width:95%;
+    }
+
+    #snuFilterAttachmentsInput{ 
+        width: 98%;
+        padding: 2px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+     }
+
+    #snuFilterAttachmentsInput:focus {
+        outline: none;
+    }
+
+    .emailtable, .emailtable td {
+        padding-bottom:4px;
+        padding-right:10px;
+        vertical-align:top;
+    }
+
+    </style>
+    <div id="snuAttatchmentNav">
+    <input type="search" autocomplet="off" id="snuFilterAttachmentsInput" placeholder="Filter attachments...">
+        <ul>
+            
+        </ul>
+    </div>
+    <div id="snuAttatchmentContent">
+        <p>Select an attachment to preview it.</p>
+        <p>New feature, view ony, rename, delete and download via the classic way.<br />
+        respond via the new <a href="https://www.linkedin.com/company/sn-utils/" target="_blank">LinkedIn page</a></p>
+    </div>
+    `
+
+
+    let attachmentList = container.querySelector("ul");
+    let storedAtt;
+    data.forEach(att => {
+        const parts = att.file_name.split('.');
+        att.extension = parts.length > 1 ? parts.pop() : '';
+
+        const listItem = document.createElement('li');
+        listItem.style.fontSize = '9pt';
+        listItem.id = 'att_' + att.sys_id;
+        listItem.tabIndex = 0;
+        listItem.onclick = () => snuSetAttachmentPreview(att);
+        const fileSize = formatFileSize(parseInt(att.size_bytes, 10));
+        listItem.textContent = `${att.file_name} (${fileSize})`;
+        listItem.title = att.content_type;
+        listItem.dataset.type = att.content_type;
+
+        if (att.content_type.includes('image')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_image.gifx)';
+        else if (att.content_type.includes('video')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_video.gifx)';
+        else if (att.content_type.includes('audio')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_audio.gifx)';
+        else if (att.content_type.includes('zip')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_zip.gifx)';
+        else if (att.extension.startsWith('xls')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_excel.gifx)';
+        else if (att.extension.startsWith('doc')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_word.gifx)';
+        else if (att.extension.startsWith('ppt')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_project.gifx)';
+        else if (att.extension.startsWith('xml')) 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_xml.gifx)';
+        else if (['msg','eml'].includes(att.extension)) 
+            listItem.style.backgroundImage = 'url(/images/icons/email.gifx)';
+        else if (['ics'].includes(att.extension)) 
+            listItem.style.backgroundImage = 'url(/images/icons/time.gifx)';
+        else if (att.extension == 'pdf') 
+            listItem.style.backgroundImage = 'url(/images/icons/attach_pdf.gifx)';
+
+
+        attachmentList.appendChild(listItem);
+
+        if (att.sys_id == attSysId) {
+            listItem.style.fontWeight = 'bold';
+            storedAtt = att;
+        }
+
+
+    });
+
+    function formatFileSize(bytes) {
+        const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+        if (bytes === 0) return '0 b';
+        const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+        return `${(bytes / (1024 ** i)).toFixed(0)} ${sizes[i]}`;
+    }
+
+    const modal = new GlideModal('snuPreviewAttachments');
+    modal.setTitle('[SN Utils] Preview Attachments (beta)');
+    modal.setBody(container);
+
+    if (storedAtt) snuSetAttachmentPreview(storedAtt);
+
+
+    //allow key up down navigation
+    let filterdItems = Array.from(document.querySelectorAll('#snuAttatchmentNav ul li'));
+  
+    // Function to update the focus and highlight the current item
+    function snuUpdateAttachmentFocus(index) {
+        filterdItems.forEach((item, idx) => {
+        if (idx === index) {
+          item.style.fontWeight = 'bold';
+          item.focus();
+          item.click();
+        } else {
+          item.style.fontWeight = 'normal';
+        }
+      });
+    }
+  
+    attachmentList.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        snuCurrentAttatchmentIndex = (snuCurrentAttatchmentIndex + 1) % filterdItems.length;
+        snuUpdateAttachmentFocus(snuCurrentAttatchmentIndex);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        snuCurrentAttatchmentIndex = (snuCurrentAttatchmentIndex - 1 + filterdItems.length) % filterdItems.length;
+        snuUpdateAttachmentFocus(snuCurrentAttatchmentIndex);
+      }
+    });
+
+    //end allow key up down navigation
+
+
+    document.querySelector('#snuPreviewAttachments .modal-dialog').style.width = '95%';
+    document.querySelector('#snuFilterAttachmentsInput').addEventListener('keyup', (e) => {
+        const filterValue = e.target.value.toLowerCase();
+        const filterWords = filterValue.split(' ');
+        listItems = document.querySelectorAll('#snuAttatchmentNav ul li');
+        filterdItems = [];
+        listItems.forEach(function(item) {
+            const text = item.textContent.toLowerCase() + ' ' + item?.dataset?.type.toLowerCase();
+            const matches = filterWords.every(word => text.includes(word));
+            if (matches) {
+                item.style.display = '';
+                filterdItems.push(item);
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            snuUpdateAttachmentFocus(0);
+          }
+        
+    });
+    document.querySelector('#snuFilterAttachmentsInput').focus();
+}
+
+async function snuSetAttachmentPreview(att){
+    let idx = 0;
+    document.querySelectorAll('#snuAttatchmentNav ul li').forEach(li => {
+        li.style.fontWeight = 'normal'
+        if (li.id == 'att_' + att.sys_id) {
+            li.style.fontWeight = 'bold';
+            snuCurrentAttatchmentIndex = idx;
+        }
+        idx++;
+    });
+
+    if (att.content_type.includes('image')) {
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = `${att.sys_id}.iix`;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        content.appendChild(img);
+    }
+    else if (att.content_type.includes('video')) {  
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = '';
+        const video = document.createElement('video');
+        video.src = `/sys_attachment.do?sys_id=${att.sys_id}`;
+        video.controls = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '100%';
+        content.appendChild(video);
+    }   
+    else if (att.content_type.includes('audio')) {
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = '';
+        const audio = document.createElement('audio');
+        audio.src = `/sys_attachment.do?sys_id=${att.sys_id}`;
+        audio.controls = true;
+        audio.style.width = '100%';
+        content.appendChild(audio);
+    }
+    else if (['pdf'].includes(att.extension)) {
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = 'PDF being loaded, please wait...';
+        try {
+            const response = await fetch(`/sys_attachment.do?sys_id=${att.sys_id}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const iframe = document.createElement('iframe');
+            content.innerHTML = '';
+            iframe.src = `/$viewer.do?sysparm_stack=no&sysparm_sys_id=${att.sys_id}`;
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            content.appendChild(iframe);
+        } catch (error) {
+            const content = document.querySelector('#snuAttatchmentContent');
+            content.innerHTML = 'Error loading PDF:' + error.message;
+        }
+    }
+    else if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(att.extension)) {
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        iframe.src = `/$viewer.do?sysparm_stack=no&sysparm_sys_id=${att.sys_id}`;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        content.appendChild(iframe);
+    }
+    else if (['txt', 'log', 'xml', 'json', 'html', 'css', 'js', 'sql', 'md', 'eml', 'ics'].includes(att.extension)) {
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = '';
+        
+        var fileContent = await fetch(`/sys_attachment.do?sys_id=${att.sys_id}`).then(response => response.text());
+        var span = document.createElement('span');
+        span.innerHTML = `
+        Download: <a href="/sys_attachment.do?sys_id=${att.sys_id}">${att.file_name}</a> | 
+        <a href="#" title="[SN Utils] Copy result to clipboard" onclick="snuCopyAttatchmentContent()" >
+        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 0 1 1 1Z"/>
+        </svg>
+        </a><span id="actionResult"></span>`;
+        content.appendChild(span);
+        
+        const pre = document.createElement('pre');
+        pre.textContent = fileContent;
+        pre.id = 'snuAttatchmentContentPre';
+        pre.style.overflow = 'auto';
+        pre.style.whiteSpace = 'pre-wrap';
+        pre.style.maxHeight = '100%';
+        content.appendChild(pre);
+
+    }
+    else if (['msg'].includes(att.extension)) {
+
+        let scriptRead = document.createElement('script');
+        scriptRead.async = false; 
+        scriptRead.src = snusettings.extensionUrl + 'js/msg.reader.js';
+        document.head.appendChild(scriptRead);
+        let scriptStream = document.createElement('script');
+        scriptStream.async = false; 
+        scriptStream.src = snusettings.extensionUrl + 'js/DataStream.js';
+        document.head.appendChild(scriptStream);
+
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = '';
+        let fileContent = await fetch(`/sys_attachment.do?sys_id=${att.sys_id}`).then(response => response.blob());
+        let fileArrayBuffer = await new Response(fileContent).arrayBuffer();
+        
+        var msgReader = new MSGReader(fileArrayBuffer);
+        var fileData = msgReader.getFileData();
+        
+        const div = document.createElement('div');
+        div.innerHTML = jsonToHtmlTable(fileData);
+        div.style.overflow = 'auto';
+        div.style.maxHeight = '100%';
+        content.appendChild(div);
+
+        function jsonToHtmlTable(jsonData) {
+
+            let table = '<table class="emailtable" border="0">';
+        
+            table += '<tr>';
+            table += `<td>Subject:</td><td>${jsonData.subject}</td>`;
+            table += '</tr>';
+
+            table += '<tr>';
+            table += `<td>Sender:</td><td>${jsonData.senderName} (${jsonData.senderEmail})</td>`;
+            table += '</tr>';
+
+            table += '<tr><td>Recipient:</td><td>';
+            jsonData.recipients.forEach(recipient => table += `${recipient.name}(${recipient.email});`);
+            table += '</td></tr>';
+        
+            table += '<tr>';
+            table += `<td>Body:</td><td><pre style="max-width:100%; white-space: pre-wrap;">${jsonData.body}</pre></td>`;
+            table += '</tr>';
+        
+            table += '</table>';
+        
+            return table;
+        }
+    }
+    else{
+        const content = document.querySelector('#snuAttatchmentContent');
+        content.innerHTML = '';
+        const a = document.createElement('a');
+        a.href = `/sys_attachment.do?sys_id=${att.sys_id}`;
+        a.textContent = `${att.file_name} Filetype not supportes, download attachment`;
+        a.style.display = 'block';
+        content.appendChild(a);
+    }
+}
+
+async function snuCopyAttatchmentContent() {
+	try {
+		// Get the <pre> element
+		const pre = document.querySelector('#snuAttatchmentContentPre');
+
+		// Use the navigator clipboard API to copy text
+		await navigator.clipboard.writeText(pre.innerText);
+		console.log('Text copied successfully!');
+		document.querySelector('#actionResult').innerText = 'Copied ' + pre.innerText.length + ' characters to clipboard';
+
+	} catch (err) {
+		document.querySelector('#actionResult').innerText = 'Failed to copy text: ' + err.message;
+	}
+}
+
+function snuAddPreviewAttachmentLinks(){
+    if (typeof g_form == 'undefined') return;
+    
+    let attachments = document.querySelectorAll('li.attachment_list_items, li.manage_list');
+    attachments.forEach(attachment => {
+        let attSysId= attachment?.firstChild?.id?.replace('attachment_', '') || '';
+        let pvw = document.createElement('a');
+        pvw.innerHTML = "[⌕]&nbsp;";
+        pvw.title = "[SN Utils] Open Preview attachments modal (beta)";
+        pvw.onclick = () => snuPreviewAttachmentsModal(attSysId);
+        if (attachment.classList.contains('attachment_list_items')) 
+            attachment.querySelector('span').appendChild(pvw);
+        if (attachments.length > 1 && attachment.classList.contains('manage_list')) 
+            attachment.insertBefore(pvw, attachment.firstChild);
+    });
 }

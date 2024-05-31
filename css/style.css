@@ -3,7 +3,7 @@ body {
     font-family: "Helvetica Neue", "Helvetica", Arial, sans-serif;
     font-size: 10pt;
     width: 800px;
-    height: 500px;
+    height: 550px;
     overflow-x: hidden;
 }
 
@@ -62,6 +62,18 @@ a.iscurrent:hover {
     padding-top: 12px;
     height: 50px;
     border-bottom-style: none;
+}
+
+li.highlightli{
+    padding-top: 7pt;
+}
+
+a.highlightlink {
+    color: #fff !important;
+    border: none;
+    margin-top: 0px;
+    font-size: 7pt;
+    font-weight:800;
 }
 
 #content .nav-link {
@@ -413,4 +425,14 @@ textarea:read-only {
 #tabslashcommands .row>* {
     padding-right: 4px;
     padding-left: 4px;
+}
+
+#aboutlinkedin{
+    margin:30px 0 60px 0;
+}
+
+.aboutlinkedina{
+   color: #000000;
+   font-size: 24px;
+   font-weight: 800;
 }

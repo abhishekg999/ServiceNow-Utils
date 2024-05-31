@@ -1,7 +1,130 @@
 # CHANGELOG.md
 
-## 7.4.0.3 (2024-03-05)
+## 8.1.2.3 (2024-05-30)
+Fixes / changes:
+  - Workaround for Chromium bug  https://issues.chromium.org/issues/342316798, this bug causes list selectors not to respond to doubleclick. This fix set the selectedIndex of the parent select of the clicked option when it is -1
+
+
+## 8.1.2.0/2 (2024-05-24)
+Fixes / changes:
+  - Support InstanceTag in Safari, Arc and Opera via fallback to popup instead of sidebar
+  - Include viewname in /crn command (Issue #506 / PR #507)
+
+## 8.1.1.0 (2024-05-22)
+Fixes / changes:
+  - Add keyboard up down navigation to attachment preview modal
+  - Change background script execute shortcut to CMD-SHIFT-Enter to prevent conflict with Now Assist
+  - Encode url field in Slashcommands settings tab datatable (Issue #503)
+  
+## 8.1.0.0 (2024-05-20)
 Features:
+  - On clasic forms with attatchments, you can now click [⌕] This opens a modal with a list of the attachments, and it tries to show the preview of the attachment. 
+
+Fixes / changes:
+  - Excluding javascript: slash commands from purifieing (Issue #503)
+  - Adding fallback for the new versions link, to open a new tab instead of popup, when GlideList2 is not available (Issue #504)
+  - Excluding field names in list from Technical Names toggle via double click (Discussion #505)
+  - Added promotion links to follow the new LinkedIn Page https://www.linkedin.com/company/sn-utils
+  - Added msg.reader.js and DataStrea.js library to support preview .msg files in the attachment modal
+
+## 8.0.3.0 (2024-05-18)
+Features:
+  - Records that are most likely metadata get a link added to the Related links section. Clicking this link opens a modal with the Update Versions (name=tablename_sys_id). The link only shows on existing records and when the form does not have the versions related list. function: snuAddSysUpdateVersionLink()
+
+
+## 8.0.2.0 (2024-05-16)
+Fixes / changes:
+  - Fix for /vd does not work on tables without sys_updated.. fields (Issue #499) 
+  - Separator line adjust when height changen in BG Script page (Issue #502)
+  - Add copy button to BG Script result as well as restructure to use icons instead of text links
+  - Also add a button to BG script to toggle *** Script: prefix in result output
+  - moved bgscript.js to /js folder
+  - added par_ prefix so to snuAddFieldSyncButtons function
+
+
+## 8.0.1.0 (2024-05-02)
+Features:
+  - Add slash command /uibo Using this when in a Next Experience page, it will open UI Builder and try to open the matching Experience and UIB Page/Variant (Created by Thomas Walker - Veracity)
+  - Add slash command /crn Copy Record to New tab. This will open a unsaved new record with the values from the current record. This is for cases where Insert and Stay is disabled. (Created by Thomas Walker - Veracity)
+  - CTRL Click the operator in a list filter adds the Contains (LIKE) filter as an option when it does not exist. In particular handy for some script fields that dont show the Contains operator. 
+
+Fixes / changes:
+  - Added a direct link to the CTRL-SHIFT-S shortcut in case Insert and Stay is not available, it adds a direct link to the new /crn command
+
+## 8.0.0.0 (2024-04-27)
+  - SN Utils is 8 years old! 🎉 => Version 8.0.0.0
+
+ Fixes / changes:
+  - Restore and improve /tn on workspaces.
+  - Restore doubleclick label to edit on workspaces.
+  - Admin check for doubleclick to edit in workspace.
+  - Tooltip (title) of IntsanceTag now shows customized commands.
+  - Change extension shortcuts for Safari from CMD to CTRL in manifest.json
+  - Removed improved message on node switch tab in popup
+
+## 7.4.4.3 (2024-04-19)
+Fixes / changes:
+  - Replaced slash command /aw with /sow to open Service Operations Workspace
+  - Prevent adding element on/sys.scripts.do when parent element not on page
+  - Prevent CTRL-S when on Update selected, Update all form (Issue #495)
+
+## 7.4.4.0 (2024-04-15)
+Fixes / changes:
+  - Support in Workflow Studio for /vd command (resolving tablename and sys_id)
+  - Modify snuFetchData so it can supports method via object propery method
+  - Simplify label of function to show pickers: Show (Application and Updateset) Pickers in Next UI Header
+  - Support for Inline PowerShell script from Flow Designer Actions (Discussion #492)
+
+## 7.4.3.3 (2024-04-11)
+Fixes / changes:
+  - Update docs and dev commands to washingtondc
+  - Fix cancelling / (forward slash) key
+  - Remove BETA/NEW! from InstanceTag setting
+
+## 7.4.3.0 (2024-04-03)
+Features:
+  - Add a setting "Prioritize CTRL-/ and CMD-/ above OOB shortcut." that allows override of the slashcommand shortcut, so that slash commands popup shows when CTRL-/ or CMD-/ is pressed, instead of the platform shortcuts overview. A second press of the shortcut will show the platform shortcuts overview. 
+Fixes / changes:
+  - Change so version is shown in the popup info tab, even when not on a ServiceNow instance.
+  - Show warning in info tab when SN Utils does not run on current page.
+  - Disable tabs in popup when SN Utils does not run on current page.
+
+## 7.4.2.0 (2024-03-27)
+Fixes / changes:
+  - Minor updates for /vd not always working in Firefox (Issue #484)
+  - Prevent global g_list object on forms (may interfeer with OOB scripts)
+  - Added snuAddGckToken function to inject.js run when on stats.do page. This adds the g_ck token so that Node switching and othe popup functions works when on that page.
+  - Fix for scriptsync button not working on classic BG script page (Issue #486)
+  - Note: 7.4.1.7 and 7.4.1.9 only published for troubleshooting purposes
+
+
+## 7.4.1.5 (2024-03-25)
+Fixes / changes:
+  - Update to slashcommand search gsft_main frame when native next experience active.
+  - Adding "Open in VS Code" link to modern script editor. Also passing scope value in both classic and modern BG script.
+  - Increase height of popup a bit, that hopefully fixes flickering in Firefox (Issue #483)
+  - Fix for cookieStoreId for Firefox Multi Account Container comatibility (Issue #473)
+  - Change how error is presented in codeeditor.html Monaco editor
+
+
+## 7.4.1.0 (2024-03-21)
+Fixes / changes:
+  - Update to node switching to support OnPrem (without BIGipServerpool cookie)
+
+## 7.4.0.9 (2024-03-14)
+Fixes / changes:
+  - Only toggle number navigation if numbers are visible (Issue #478)
+  - Adding some code to explore if OnPrem and normal version can be merged
+
+## 7.4.0.7 (2024-03-09)
+Fixes / changes:
+  - Updates in scriptsyn.js to support running background scripts inside VS Code
+  - Addidng cookieStorId for Firefox Multi Account Container comatibility (Issue #473)
+  - Adding parameter to function snuAddListLinks(forceLink) to allow for force link in list (Related to Issue #442)
+  - Minor InstanceTag fix
+
+## 7.4.0.3 (2024-03-07)
+Fixes / changes:
   - Set inital InitalTag to opacity 0.01 so only shows after settings applied
   - Prevent open InitialTag shift-click opening in new window
 

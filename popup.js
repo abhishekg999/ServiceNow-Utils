@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
         cookieStoreId = tabs[0].cookieStoreId || '';
         urlFull = tabs[0].url;
         getBrowserVariables(tabid,cookieStoreId);
+        document.querySelector("#snuVersion").innerText = chrome.runtime.getManifest().version;
+        document.querySelector('#leavereview').style.display = 'none';
 
     });
 
@@ -45,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     clearInvalidatedLocalStorageCache();
 
+    //document.querySelector('#reqPermission').addEventListener("click", requestPermissionsForCurrentSite);
 });
 
 //clear all invalidated cached items like tablenames and nodes
@@ -232,14 +235,25 @@ async function setActiveNode(node) {
                     // matches BIGipServerpool_<alphanumeric instance name>
                     return cookie.name.match(/^(BIGipServer[\w\d]+)$/);
                 });
-                if (!BIGipServerpoolCookie?.value?.endsWith('.0000')){ 
+                if (!BIGipServerpoolCookie) { //onprem or no cookie found
+                    chrome.cookies.set({
+                        "name": "glide_user_route",
+                        "url": new URL(url).origin,
+                        "secure": true,
+                        "httpOnly": true,
+                        "value": 'glide.' + node.nodeId
+                    }, s => {
+                        getActiveNode(jsnNodes);
+                    });
+                }
+                else if (!BIGipServerpoolCookie?.value?.endsWith('.0000')){ 
                     //this is a test to allow node switching on ADCv2 migrated instances
 
                     let ip = ipArr.join('.');
                     let ipPort = ip + ':' + port;
                     let md5IpPort = md5(ipPort);
 
-                    console.log(md5IpPort, node);
+                    //console.log(md5IpPort, node);
 
                     chrome.cookies.set({
                         "name": BIGipServerpoolCookie.name,
@@ -262,7 +276,7 @@ async function setActiveNode(node) {
                     // document.querySelector('#nodemessage').innerText = `This instance uses ADCv2 loadbalancing, node switching may not work or switch to a random node. Try a few times... `;
                     // document.querySelector('#nodemessage').classList.remove('hidden');
                 }
-                else {
+                else { //classic node switching
 
                     chrome.cookies.set({
                         "name": BIGipServerpoolCookie.name,
@@ -334,8 +348,14 @@ function getParameterByName(name, url) {
 //Also attach event handlers.
 function setBrowserVariables(obj) {
 
-    $("#snuVersion").text(chrome.runtime.getManifest().version);
+    document.querySelector('#notactive').style.display = 'none';
+    document.querySelector('#leavereview').style.display = '';
 
+    let elms = document.querySelectorAll('[data-bs-toggle="disabledtab"]');
+    elms.forEach(function(el) {
+        el.setAttribute('data-bs-toggle', 'tab');
+    });
+    
     g_ck = obj.myVars.g_ck || '';
     url = obj.url;
     instance = (new URL(url)).host.replace(".service-now.com", "");
@@ -430,6 +450,7 @@ function setBrowserVariables(obj) {
     $.fn.dataTable.moment(datetimeformat);
 
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        
         var target = $(e.target).data("bsTarget"); // activated tab
 
         $('#tbxactivetab').val(target);
@@ -1257,7 +1278,7 @@ function getSlashcommands() {
                 { "mDataProp": "command" },
                 {
                     mRender: function (data, type, row) {
-                        return "<div>" + row.hint + "</div><div class='snucmdurl'>" + row.url + "</div>";
+                        return "<div>" + row.hint + "</div><div class='snucmdurl'>" + row.url.replace(/[&<>'"]/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;','\'':'&#39;','"':'&quot;'}[tag] || tag)); + "</div>";
                     }
                 },
                 {
@@ -1738,3 +1759,29 @@ function escape(htmlStr) {
           .replace(/'/g, "&#39;");        
  
  }
+
+
+function requestPermissionsForCurrentSite() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        var currentTab = tabs[0];
+        if (currentTab && currentTab.url) {
+            var url = new URL(currentTab.url);
+            var host = url.hostname;
+
+            // Build the permissions object for host permissions
+            var permissions = {
+                origins: [`*://${host}/*`]
+            };
+
+            // Request permissions
+            chrome.permissions.request(permissions, function(granted) {
+                if (granted) {
+                    console.log(`Permissions granted for ${host}`);
+                    // Extension can now interact with the granted site
+                } else {
+                    console.log('Permissions not granted.');
+                }
+            });
+        }
+    });
+}
